@@ -172,7 +172,7 @@ periodic_interval = 1800
 # 86400 秒为一天
 service_resync_interval = 86400
 
-# 此配置用来设置更新member状态的周期。小于0表示不更新， 等于0表示60秒，剩余的情况就是周期长度。
+# 此配置用来设置更新member状态的周期。小于0表示不更新， 等于0表示60秒，剩余的情况就是周期长度。默认不配置则表示周期是30秒。
 member_update_interval = 300
 ```
 
