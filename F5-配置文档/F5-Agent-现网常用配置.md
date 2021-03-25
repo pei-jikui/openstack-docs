@@ -171,6 +171,9 @@ periodic_interval = 1800
 # 此配置和 F5 agent 定时同步 neutron DB 数据到 Bigip 有关，在没有任何 report_state, 和对 neutron lbaas 操作的情况下，service_resync_interval 决定了每隔多久去做数据同步。建议可以将此值设置大一些，这样在没有对 Lbaas 操作的情况下，不会频繁 sync 数据。
 # 86400 秒为一天
 service_resync_interval = 86400
+
+# 此配置用来设置更新member状态的周期。小于0表示不更新， 等于0表示60秒，剩余的情况就是周期长度。默认不配置则表示周期是30秒。
+member_update_interval = 300
 ```
 
 频繁的配置下发和同步数据过程之前可能存在下发速度上的相互影响，因为配置下发和同步数据在同一个下发列队中，这两种操作会按照顺序完成，如果，同步配置量较大，可能会让正常配置下略有等待。具体 `periodic_interval` 和 `service_resync_interval`设置多少要待后期验证和实验更近发布。现在建议 `service_resync_interval` 设置为一天，`periodic_interval `建议设置为 1800 秒。
