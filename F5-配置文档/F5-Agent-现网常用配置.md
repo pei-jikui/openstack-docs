@@ -172,14 +172,12 @@ periodic_interval = 1800
 # 86400 秒为一天
 service_resync_interval = 86400
 
-# 此配置用来设置更新member状态的周期。小于0表示不更新， 等于0表示60秒，剩余的情况就是周期长度。默认不配置则表示周期是30秒。
-member_update_interval = 300
 ```
 
 频繁的配置下发和同步数据过程之前可能存在下发速度上的相互影响，因为配置下发和同步数据在同一个下发列队中，这两种操作会按照顺序完成，如果，同步配置量较大，可能会让正常配置下略有等待。具体 `periodic_interval` 和 `service_resync_interval`设置多少要待后期验证和实验更近发布。现在建议 `service_resync_interval` 设置为一天，`periodic_interval `建议设置为 1800 秒。
 
  环境配置过程中，需要根据环境，用户操作下发频率，同步频率，Bigip 设备更换频率，Bigip 配置更新频率等综合考虑全量同步对配置下发效率的影响。后期我们会进行实验和观察客户状态，给出进一步的分析结果。
-
+ 
 ## F5 agent 4.5 Listener 带宽配置
 
 F5 agent 4.5中与带宽配置相关的参数有f5_bandwidth_default和f5_bandwidth_max两个参数。
@@ -200,6 +198,49 @@ f5_bandwidth_max = 10000
 # 如果bandwidth输入大于max, 我们把它解释为输入错误，创建或者更新LB出错。
 # 如果bandwidth在合理区间内[0,max], 但是超过了bigip侧的范围，我们不做检查，等待bigip侧的处理错误返回。
 ```
+ 
+## F5 agent member状态更新相关参数
+
+F5 agent 与member状态更新的参数有如下几个：
+
+```ini
+# 此参数用来控制从bigip上获取member的方式。
+# 2表示按照folder(partition)为单位获取member数据。 
+# 1表示按照pool为单位获取member数据。
+# 0表示按照原来没有优化前的方式去做更新。
+# 默认值是2并且强烈建议不要修改。
+member_update_mode = 2 
+
+# 此参数用来表示agent更新member数据的周期，单位是秒。
+# 如果是负值表示此agent不做更新。
+# 默认值是300
+member_update_interval = 300
+
+# 此参数用来控制agent批量一次发送给driver member的数量。 
+# 负值表示一次把所有的member发送给driver侧。
+# 默认值是-1.强烈建议不要修改。
+member_update_member = -1
+
+## 下面两个参数只适用于多agent环境。（如果是单agent，强烈建议不要修改和配置）
+# 此参数用来配置同一个prefix下面所有的agent的数量。
+# 默认值是1
+member_update_agent_number = 1 
+
+# 此参数用来配置同一个prefix下面在所有的agent里面，此agent的序号。
+# 0表示第一个。如果配置负数，表示此agent不做更新。
+# 默认值是0
+member_update_agent_order = 0
+
+# 多agent配置举例说明：
+# 1. 为了达到最佳的效果，我们要求多个agent所在主机的时间一致
+# 2. 配置举例
+# 比如在prefix 为“Project” 下面有3个agent，我们需要如下配置：
+# member_update_agent_number = 3 (所有agent的配置文件需要一致)
+# 然后3个agent的member_update_agent_order依次配置为0，1， 2。
+# 如果上述参数配置错误会自动调整，比如，如果配置的order大于agent_member，自动调整为最后一个。
+# 如果多个agent的order配置重复，不会影响功能，只会影响member 更新的周期是否平均。
+```
+
 ## REFERENCES
 
 [F5 Integration for OpenStack Neutron LBaaS - Troubleshooting](https://clouddocs.f5.com/cloud/openstack/v1/troubleshooting/troubleshoot-lbaas.html)
